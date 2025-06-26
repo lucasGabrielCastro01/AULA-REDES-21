@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo 21 - Interface Web</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #4a5568;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #718096;
+            font-size: 1.1em;
+        }
+
+        .connection-section {
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #4a5568;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .game-section {
+            display: none;
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .cards-display {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #e2e8f0;
+        }
+
+        .card {
+            display: inline-block;
+            background: white;
+            border: 2px solid #4a5568;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin: 5px;
+            font-size: 1.2em;
+            font-weight: bold;
+            min-width: 50px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .score {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin: 15px 0;
+        }
+
+        .messages {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #e2e8f0;
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .message {
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .message:last-child {
+            border-bottom: none;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+
+        .status.connected {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status.disconnected {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .status.waiting {
+            background: #fef5e7;
+            color: #744210;
+        }
+
+        .game-controls {
+            margin-top: 20px;
+        }
+
+        .result {
+            font-size: 1.8em;
+            font-weight: bold;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .result.win {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .result.lose {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .result.tie {
+            background: #bee3f8;
+            color: #2a4365;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .card {
+                font-size: 1em;
+                padding: 8px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Jogo 21</h1>
+            <p>Interface Web para o Blackjack UDP</p>
+        </div>
+
+        <div id="connectionSection" class="connection-section">
+            <h3>Conectar ao Servidor</h3>
+            <div class="input-group">
+                <label for="serverHost">Endereço do Servidor:</label>
+                <input type="text" id="serverHost" value="localhost" placeholder="localhost">
+            </div>
+            <div class="input-group">
+                <label for="serverPort">Porta:</label>
+                <input type="number" id="serverPort" value="12345" placeholder="12345">
+            </div>
+            <div class="input-group">
+                <label for="playerName">Seu Nome:</label>
+                <input type="text" id="playerName" placeholder="Digite seu nome">
+            </div>
+            <button class="btn" onclick="connectToServer()">Conectar</button>
+        </div>
+
+        <div id="statusSection">
+            <div id="connectionStatus" class="status disconnected">
+                Desconectado
+            </div>
+        </div>
+
+        <div id="gameSection" class="game-section">
+            <h3>Sua Mão</h3>
+            <div id="cardsDisplay" class="cards-display">
+                <p>Aguardando cartas...</p>
+            </div>
+            <div id="scoreDisplay" class="score">
+                Pontuação: 0
+            </div>
+            
+            <div class="game-controls">
+                <button class="btn" id="hitBtn" onclick="requestCard()" disabled>Pedir Carta</button>
+                <button class="btn" id="standBtn" onclick="stand()" disabled>Parar</button>
+            </div>
+
+            <div id="resultDisplay"></div>
+        </div>
+
+        <div id="messagesSection">
+            <h3>Mensagens do Servidor</h3>
+            <div id="messages" class="messages">
+                <div class="message">Aguardando conexão...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let connected = false;
+        let gameActive = false;
+        let playerCards = [];
+        let playerScore = 0;
+
+        function updateStatus(message, type) {
+            const statusElement = document.getElementById('connectionStatus');
+            statusElement.textContent = message;
+            statusElement.className = `status ${type}`;
+        }
+
+        function addMessage(message) {
+            const messagesContainer = document.getElementById('messages');
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message';
+            messageElement.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            messagesContainer.appendChild(messageElement);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function updateCardsDisplay() {
+            const cardsContainer = document.getElementById('cardsDisplay');
+            if (playerCards.length === 0) {
+                cardsContainer.innerHTML = '<p>Aguardando cartas...</p>';
+            } else {
+                cardsContainer.innerHTML = playerCards.map(card => 
+                    `<span class="card">${card}</span>`
+                ).join('');
+            }
+            
+            document.getElementById('scoreDisplay').textContent = `Pontuação: ${playerScore}`;
+        }
+
+        function calculateScore(cards) {
+            let score = 0;
+            let aces = 0;
+            
+            for (let card of cards) {
+                const value = card.slice(0, -1); // Remove suit
+                if (['J', 'Q', 'K'].includes(value)) {
+                    score += 10;
+                } else if (value === 'A') {
+                    aces += 1;
+                    score += 11;
+                } else {
+                    score += parseInt(value);
+                }
+            }
+            
+            // Adjust for aces
+            while (score > 21 && aces > 0) {
+                score -= 10;
+                aces -= 1;
+            }
+            
+            return score;
+        }
+
+        function connectToServer() {
+            const host = document.getElementById('serverHost').value || 'localhost';
+            const port = document.getElementById('serverPort').value || '12345';
+            const name = document.getElementById('playerName').value.trim();
+            
+            if (!name) {
+                alert('Por favor, digite seu nome!');
+                return;
+            }
+
+            // Simula conexão WebSocket (na implementação real, seria necessário um servidor WebSocket)
+            // Para este exemplo, vamos simular a interface
+            simulateConnection(name);
+        }
+
+        function simulateConnection(playerName) {
+            updateStatus('Conectando...', 'waiting');
+            addMessage(`Tentando conectar como ${playerName}...`);
+            
+            setTimeout(() => {
+                connected = true;
+                updateStatus('Conectado', 'connected');
+                addMessage(`Conectado com sucesso! Bem-vindo, ${playerName}!`);
+                
+                document.getElementById('connectionSection').style.display = 'none';
+                document.getElementById('gameSection').style.display = 'block';
+                
+                // Simula início do jogo
+                setTimeout(() => {
+                    startSimulatedGame();
+                }, 2000);
+            }, 1500);
+        }
+
+        function startSimulatedGame() {
+            addMessage('Partida iniciada! Você recebeu suas cartas iniciais.');
+            
+            // Simula cartas iniciais
+            const suits = ['♠', '♥', '♦', '♣'];
+            const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+            
+            const card1 = values[Math.floor(Math.random() * values.length)] + suits[Math.floor(Math.random() * suits.length)];
+            const card2 = values[Math.floor(Math.random() * values.length)] + suits[Math.floor(Math.random() * suits.length)];
+            
+            playerCards = [card1, card2];
+            playerScore = calculateScore(playerCards);
+            
+            updateCardsDisplay();
+            addMessage(`Suas cartas: ${card1}, ${card2}`);
+            addMessage(`Pontuação atual: ${playerScore}`);
+            
+            document.getElementById('hitBtn').disabled = false;
+            document.getElementById('standBtn').disabled = false;
+            gameActive = true;
+            
+            if (playerScore === 21) {
+                addMessage('Blackjack! Você tem 21!');
+                endGame('Blackjack!', 'win');
+            }
+        }
+
+        function requestCard() {
+            if (!gameActive) return;
+            
+            const suits = ['♠', '♥', '♦', '♣'];
+            const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+            const newCard = values[Math.floor(Math.random() * values.length)] + suits[Math.floor(Math.random() * suits.length)];
+            
+            playerCards.push(newCard);
+            playerScore = calculateScore(playerCards);
+            
+            updateCardsDisplay();
+            addMessage(`Nova carta: ${newCard}`);
+            addMessage(`Pontuação atual: ${playerScore}`);
+            
+            if (playerScore > 21) {
+                addMessage('Você estourou! Pontuação acima de 21.');
+                endGame('Você perdeu!', 'lose');
+            } else if (playerScore === 21) {
+                addMessage('Você tem 21! Sua jogada foi finalizada automaticamente.');
+                endGame('Você tem 21!', 'win');
+            }
+        }
+
+        function stand() {
+            if (!gameActive) return;
+            
+            addMessage(`Você parou com ${playerScore} pontos.`);
+            
+            // Simula resultado
+            const outcomes = ['win', 'lose', 'tie'];
+            const messages = ['Você ganhou!', 'Você perdeu!', 'Empate!'];
+            const randomOutcome = Math.floor(Math.random() * 3);
+            
+            setTimeout(() => {
+                endGame(messages[randomOutcome], outcomes[randomOutcome]);
+            }, 1000);
+        }
+
+        function endGame(message, result) {
+            gameActive = false;
+            document.getElementById('hitBtn').disabled = true;
+            document.getElementById('standBtn').disabled = true;
+            
+            const resultDisplay = document.getElementById('resultDisplay');
+            resultDisplay.innerHTML = `<div class="result ${result}">${message}</div>`;
+            
+            addMessage(`Resultado final: ${message}`);
+            
+            setTimeout(() => {
+                if (confirm('Deseja jogar novamente?')) {
+                    resetGame();
+                }
+            }, 3000);
+        }
+
+        function resetGame() {
+            playerCards = [];
+            playerScore = 0;
+            gameActive = false;
+            
+            updateCardsDisplay();
+            document.getElementById('resultDisplay').innerHTML = '';
+            document.getElementById('hitBtn').disabled = true;
+            document.getElementById('standBtn').disabled = true;
+            
+            addMessage('Aguardando nova partida...');
+            
+            setTimeout(() => {
+                startSimulatedGame();
+            }, 2000);
+        }
+
+        // Inicialização
+        updateCardsDisplay();
+    </script>
+</body>
+</html>
+
